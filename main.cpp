@@ -35,22 +35,25 @@ int main()
     playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
-    AnimationData obstacleData{
-        {0.0, 0.0, obstacle.width/3, obstacle.height}, // Rectangle rectangle
-        {windowWidth, windowHeight - obstacle.height}, // Vector2 position
-        0, // int frame
-        1.0/12.0, // float updateTime
-        0.0 // float runningTime
-    };
-
     Texture2D obstacle2 = LoadTexture("textures/obstacle.png");
-    AnimationData obstacle2Data{
-        {0.0, 0.0, obstacle2.width/3, obstacle2.height}, // Rectangle rectangle
-        {windowWidth + 300, windowHeight - obstacle2.height}, // Vector2 position
-        0, // int frame
-        1.0/16.0, // float updateTime
-        0.0 // float runningTime
-    };
+
+    // Array of obstacles
+    AnimationData obstacles[2]{};
+
+    for (int i = 0; i < 2; i++)
+    {
+        obstacles[i].rectangle.x = 0.0;
+        obstacles[i].rectangle.y = 0.0;
+        obstacles[i].rectangle.width = obstacle.width/3;
+        obstacles[i].rectangle.height = obstacle.height;
+        obstacles[i].position.y = windowHeight - obstacle.height;
+        obstacles[i].frame = 0;
+        obstacles[i].runningTime = 0.0;
+        obstacles[i].updateTime = 0.0;
+    }
+
+    obstacles[0].position.x = windowWidth;
+    obstacles[1].position.x = windowWidth + 300;
 
     // Frames per second
     SetTargetFPS(60);
@@ -72,11 +75,11 @@ int main()
             playerVelocity = playerVelocity + jumpVelocity;
         }
 
-        obstacle2Data.position.x += (obstacleVelocity * timeSinceLastFrame);
-        obstacleData.position.x += (obstacleVelocity * timeSinceLastFrame);
+        obstacles[1].position.x += (obstacleVelocity * timeSinceLastFrame);
+        obstacles[0].position.x += (obstacleVelocity * timeSinceLastFrame);
         playerData.position.y += (playerVelocity * timeSinceLastFrame);
 
-        obstacleData.runningTime += timeSinceLastFrame;
+        obstacles[0].runningTime += timeSinceLastFrame;
         playerData.runningTime += timeSinceLastFrame;
 
         if(onTheGround)
@@ -94,34 +97,37 @@ int main()
             }
         }
 
-        if(obstacleData.runningTime >= obstacleData.updateTime)
+        if(obstacles[0].runningTime >= obstacles[0].updateTime)
         {
-            obstacleData.runningTime = 0.0;
-            obstacleData.rectangle.x = obstacleData.frame * obstacleData.rectangle.width;
-            obstacleData.frame++;
-            if(obstacleData.frame > 2)
+            obstacles[0].runningTime = 0.0;
+            // Update animation frame
+            obstacles[0].rectangle.x = obstacles[0].frame * obstacles[0].rectangle.width;
+            obstacles[0].frame++;
+            if(obstacles[0].frame > 2)
             {
-                obstacleData.frame = 0;
+                obstacles[0].frame = 0;
             }
         }
 
-        if(obstacle2Data.runningTime >= obstacle2Data.updateTime)
+        if(obstacles[1].runningTime >= obstacles[1].updateTime)
         {
-            obstacle2Data.runningTime = 0.0;
-            obstacle2Data.rectangle.x = obstacle2Data.frame * obstacle2Data.rectangle.width;
-            obstacle2Data.frame++;
-           if(obstacle2Data.frame > 2)
+            obstacles[1].runningTime = 0.0;
+            // Update animation frame
+            obstacles[1].rectangle.x = obstacles[1].frame * obstacles[1].rectangle.width;
+            obstacles[1].frame++;
+           if(obstacles[1].frame > 2)
             {
-                obstacle2Data.frame = 0;
+                obstacles[1].frame = 0;
             }
         }
-        DrawTextureRec(obstacle2, obstacle2Data.rectangle, obstacle2Data.position, WHITE);
-        DrawTextureRec(obstacle, obstacleData.rectangle, obstacleData.position, WHITE);
+        DrawTextureRec(obstacle2, obstacles[1].rectangle, obstacles[1].position, WHITE);
+        DrawTextureRec(obstacle, obstacles[0].rectangle, obstacles[0].position, WHITE);
         DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
         EndDrawing();
         
     }
     UnloadTexture(player);
     UnloadTexture(obstacle);
+    UnloadTexture(obstacle2);
     CloseWindow();
 }
