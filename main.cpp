@@ -1,6 +1,15 @@
 #include "raylib.h"
 #include <string>
 
+struct AnimationData
+{
+    Rectangle rectangle;
+    Vector2 position;
+    int frame;
+    float updateTime;
+    float runningTime;
+};
+
 int main()
 {
     const int windowWidth = 800;
@@ -8,31 +17,40 @@ int main()
     const int jumpVelocity = -800;
     const int obstacleVelocity = -300;
     const int gravity = 3000;
-    const float playerUpdateTime = 1.0 / 12.0;
-    const float obstacleUpdateTime = 1.0 / 12.0;
-    float playerRunningTime = 0.0;
-    float obstacleRunningTime = 0.0;
     int playerVelocity = 0;    
-    int playerFrame = 0;
-    int obstacleFrame = 0;
 
     // Open window
     InitWindow(windowWidth, windowHeight, "Samiii");
 
     Texture2D player = LoadTexture("textures/player.png");
-    Rectangle playerRectangle{0.0, 0.0, player.width/6, player.height};
-    Vector2 playerPosition{windowWidth/2 - (playerRectangle.width/2), windowHeight - playerRectangle.height};
+    AnimationData playerData;
+    playerData.rectangle.width = player.width/6;
+    playerData.rectangle.height = player.height;
+    playerData.rectangle.x = 0;
+    playerData.rectangle.y = 0;
+    playerData.position.x = windowWidth/2 - (playerData.rectangle.width/2);
+    playerData.position.y = windowHeight - playerData.rectangle.height;
+    playerData.frame = 0;
+    playerData.updateTime = 1.0/12.0;
+    playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
-    Rectangle obstacleRectangle{0.0, 0.0, obstacle.width/3, obstacle.height};
-    Vector2 obstaclePosition{windowWidth, windowHeight - obstacleRectangle.height - 5};
+    AnimationData obstacleData{
+        {0.0, 0.0, obstacle.width/3, obstacle.height}, // Rectangle rectangle
+        {windowWidth, windowHeight - obstacle.height}, // Vector2 position
+        0, // int frame
+        1.0/12.0, // float updateTime
+        0.0 // float runningTime
+    };
 
     Texture2D obstacle2 = LoadTexture("textures/obstacle.png");
-    Rectangle obstacleRectangle2{0.0, 0.0, obstacle.width/3, obstacle.height};
-    Vector2 obstaclePosition2{windowWidth + 300, windowHeight - obstacleRectangle.height - 5};
-    const float obstacleUpdateTime2 = 1.0 / 16.0;
-    float obstacleRunningTime2 = 0;
-    int obstacleFrame2 = 0;
+    AnimationData obstacle2Data{
+        {0.0, 0.0, obstacle2.width/3, obstacle2.height}, // Rectangle rectangle
+        {windowWidth + 300, windowHeight - obstacle2.height}, // Vector2 position
+        0, // int frame
+        1.0/16.0, // float updateTime
+        0.0 // float runningTime
+    };
 
     // Frames per second
     SetTargetFPS(60);
@@ -40,7 +58,7 @@ int main()
     while (!WindowShouldClose())
     {
         bool jump = IsKeyPressed(KEY_SPACE);
-        bool onTheGround = playerPosition.y >= (windowHeight - playerRectangle.height);
+        bool onTheGround = playerData.position.y >= (windowHeight - playerData.rectangle.height);
         const float timeSinceLastFrame = GetFrameTime();
         
         BeginDrawing();
@@ -54,57 +72,52 @@ int main()
             playerVelocity = playerVelocity + jumpVelocity;
         }
 
+        obstacle2Data.position.x += (obstacleVelocity * timeSinceLastFrame);
+        obstacleData.position.x += (obstacleVelocity * timeSinceLastFrame);
+        playerData.position.y += (playerVelocity * timeSinceLastFrame);
 
-        obstaclePosition2.x = obstaclePosition2.x + (obstacleVelocity * timeSinceLastFrame);
-        obstaclePosition.x = obstaclePosition.x + (obstacleVelocity * timeSinceLastFrame);
-        playerPosition.y = playerPosition.y + (playerVelocity * timeSinceLastFrame);
-
-        obstacleRunningTime = obstacleRunningTime + timeSinceLastFrame;
-        playerRunningTime = playerRunningTime + timeSinceLastFrame;
+        obstacleData.runningTime += timeSinceLastFrame;
+        playerData.runningTime += timeSinceLastFrame;
 
         if(onTheGround)
         {
-            if(playerRunningTime >= playerUpdateTime)
+            if(playerData.runningTime >= playerData.updateTime)
             {
-                playerRunningTime = 0.0;
+                playerData.runningTime = 0.0;
                 // Update animation frame
-                playerRectangle.x = playerFrame * playerRectangle.width;
-                playerFrame++;
-                if(playerFrame > 5)
+                playerData.rectangle.x = playerData.frame * playerData.rectangle.width;
+                playerData.frame++;
+                if(playerData.frame > 5)
                 {
-                    playerFrame = 0;
+                    playerData.frame = 0;
                 }
             }
         }
 
-        if(obstacleRunningTime >= obstacleUpdateTime)
+        if(obstacleData.runningTime >= obstacleData.updateTime)
         {
-            obstacleRunningTime = 0.0;
-            obstacleRectangle.x = obstacleFrame * obstacleRectangle.width;
-            obstacleFrame++;
-            if(obstacleFrame > 2)
+            obstacleData.runningTime = 0.0;
+            obstacleData.rectangle.x = obstacleData.frame * obstacleData.rectangle.width;
+            obstacleData.frame++;
+            if(obstacleData.frame > 2)
             {
-                obstacleFrame = 0;
+                obstacleData.frame = 0;
             }
         }
 
-        if(obstacleRunningTime2 >= obstacleUpdateTime2)
+        if(obstacle2Data.runningTime >= obstacle2Data.updateTime)
         {
-            obstacleRunningTime2 = 0.0;
-            obstacleRectangle2.x = obstacleFrame2 * obstacleRectangle2.width;
-            obstacleFrame2++;
-            if(obstacleFrame2 > 2)
+            obstacle2Data.runningTime = 0.0;
+            obstacle2Data.rectangle.x = obstacle2Data.frame * obstacle2Data.rectangle.width;
+            obstacle2Data.frame++;
+           if(obstacle2Data.frame > 2)
             {
-                obstacleFrame2 = 0;
+                obstacle2Data.frame = 0;
             }
         }
-
-
-        DrawTextureRec(obstacle2, obstacleRectangle2, obstaclePosition2, WHITE);
-
-        DrawTextureRec(obstacle, obstacleRectangle, obstaclePosition, WHITE);
-
-        DrawTextureRec(player, playerRectangle, playerPosition, WHITE);
+        DrawTextureRec(obstacle2, obstacle2Data.rectangle, obstacle2Data.position, WHITE);
+        DrawTextureRec(obstacle, obstacleData.rectangle, obstacleData.position, WHITE);
+        DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
         EndDrawing();
         
     }
