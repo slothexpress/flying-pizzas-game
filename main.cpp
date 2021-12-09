@@ -58,8 +58,12 @@ int main()
     playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
-    Texture2D background = LoadTexture("textures/far-buildings.png");
+    Texture2D background = LoadTexture("textures/background.png");
     float bgX;
+    Texture2D midground = LoadTexture("textures/midground.png");
+    float mgX;
+    Texture2D foreground = LoadTexture("textures/foreground.png");
+    float fgX;
 
     const int numberOfObstacles = 6;
 
@@ -87,7 +91,7 @@ int main()
         bool jump = IsKeyPressed(KEY_SPACE);
         bool onTheGround = isOnGround(playerData, windowHeight);
         const float timeSinceLastFrame = GetFrameTime();
-        float bgScale = 3.3;
+        float scale = 3.3;
         
         // Start drawing
         BeginDrawing();
@@ -95,10 +99,34 @@ int main()
          
         // Draw scrolling background
         bgX -= 20 * timeSinceLastFrame;
+        if(bgX <= (-background.width * scale))
+        {
+            bgX = 0.0;
+        }
         Vector2 bgPosition{bgX, 0.0};
-        DrawTextureEx(background, bgPosition, 0.0, bgScale, WHITE);
-        Vector2 bg2Position{bgX + background.width * bgScale, 0.0};
-        DrawTextureEx(background, bg2Position, 0.0, bgScale, WHITE);
+        DrawTextureEx(background, bgPosition, 0.0, scale, WHITE);
+        Vector2 bg2Position{bgX + background.width * scale, 0.0};
+        DrawTextureEx(background, bg2Position, 0.0, scale, WHITE);
+
+        // Draw scrolling midground
+        mgX -= 40 * timeSinceLastFrame;
+        if(mgX <= (-background.width * scale))
+        {
+            mgX = 0.0;
+        }
+        Vector2 mgPosition{mgX, 0.0};
+        DrawTextureEx(midground, mgPosition, 0.0, scale, WHITE);
+        Vector2 mg2Position{mgX + midground.width * scale, 0.0};
+        DrawTextureEx(midground, mg2Position, 0.0, scale, WHITE);
+
+        // Draw scrolling foreground
+        fgX -= 80 * timeSinceLastFrame;
+        if(fgX <= (-background.width * scale))
+        {
+            fgX = 0.0;
+        }
+
+
 
         // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
@@ -136,5 +164,7 @@ int main()
     UnloadTexture(player);
     UnloadTexture(obstacle);
     UnloadTexture(background);
+    UnloadTexture(midground);
+    UnloadTexture(foreground);
     CloseWindow();
 }
