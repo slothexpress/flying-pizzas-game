@@ -98,42 +98,21 @@ int main()
             playerVelocity = playerVelocity + jumpVelocity;
         }
 
-        // Update obstacle position
-        for(int i = 0; i < numberOfObstacles; i++)
-        {
-            obstacles[i].position.x += (obstacleVelocity * timeSinceLastFrame);
-        }
-
         // Update player position
         playerData.position.y += (playerVelocity * timeSinceLastFrame);
-
-        for(int i = 0; i < numberOfObstacles; i++)
-        {
-            obstacles[i].runningTime += timeSinceLastFrame;
-        }
-   
 
         // Update player animation frame
         if(onTheGround)
         {
-            playerData = updateAnimationData(playerData, windowHeight, 5);
-
+            playerData = updateAnimationData(playerData, timeSinceLastFrame, 5);
         }
 
-        // Update obstacle animation frame
-        for (AnimationData obs : obstacles)
+        for(int i = 0; i < numberOfObstacles; i++)
         {
-            if(obs.runningTime >= obs.updateTime)
-            {
-                obs.runningTime = 0.9;
-                // Update animation frame
-                obs.rectangle.x = obs.frame * obs.rectangle.width;
-                obs.frame++;
-                if(obs.frame > 2)
-                {
-                    obs.frame = 0;
-                }
-            }
+            // Update obstacle position (moving left on X-axis)
+            obstacles[i].position.x += (obstacleVelocity * timeSinceLastFrame);
+            // Update obstacle animation frame
+            obstacles[i] = updateAnimationData(obstacles[i], timeSinceLastFrame, 2);
         }
 
         for(int i = 0; i < numberOfObstacles; i++)
