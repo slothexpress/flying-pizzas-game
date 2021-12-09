@@ -10,6 +10,11 @@ struct AnimationData
     float runningTime;
 };
 
+bool isOnGround(AnimationData data, int windowHeight)
+{
+    return data.position.y >= (windowHeight - data.rectangle.height);
+}
+
 int main()
 {
     const int windowWidth = 800;
@@ -60,15 +65,16 @@ int main()
     while (!WindowShouldClose())
     {
         bool jump = IsKeyPressed(KEY_SPACE);
-        bool onTheGround = playerData.position.y >= (windowHeight - playerData.rectangle.height);
+        bool onTheGround = isOnGround(playerData, windowHeight);
         const float timeSinceLastFrame = GetFrameTime();
         
         BeginDrawing();
         ClearBackground(WHITE);  
 
-        // Add gravity if NOT on the ground
+        // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
 
+        // Avoid air jump/double jump
         if(jump && onTheGround)
         {
             playerVelocity = playerVelocity + jumpVelocity;
