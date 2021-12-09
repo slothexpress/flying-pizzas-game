@@ -93,9 +93,8 @@ int main()
         BeginDrawing();
         ClearBackground(WHITE); 
          
+        // Draw scrolling background
         bgX -= 20 * timeSinceLastFrame;
-
-        // Draw background
         Vector2 bgPosition{bgX, 0.0};
         DrawTextureEx(background, bgPosition, 0.0, bgScale, WHITE);
         Vector2 bg2Position{bgX + background.width * bgScale, 0.0};
@@ -119,20 +118,19 @@ int main()
             playerData = updateAnimationData(playerData, timeSinceLastFrame, 5);
         }
 
+        // Draw player
+        DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
+
         for(int i = 0; i < numberOfObstacles; i++)
         {
             // Update obstacle position (moving left on X-axis)
             obstacles[i].position.x += (obstacleVelocity * timeSinceLastFrame);
             // Update obstacle animation frame
             obstacles[i] = updateAnimationData(obstacles[i], timeSinceLastFrame, 2);
-        }
-
-        for(int i = 0; i < numberOfObstacles; i++)
-        {
+            // Draw obstacle 
             DrawTextureRec(obstacle, obstacles[i].rectangle, obstacles[i].position, WHITE);
         }
-
-        DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
+        
         EndDrawing();
     }
     UnloadTexture(player);
