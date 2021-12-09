@@ -35,25 +35,24 @@ int main()
     playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
-    Texture2D obstacle2 = LoadTexture("textures/obstacle.png");
+
+    const int numberOfObstacles = 6;
 
     // Array of obstacles
-    AnimationData obstacles[2]{};
+    AnimationData obstacles[numberOfObstacles]{};
 
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < numberOfObstacles; i++)
     {
         obstacles[i].rectangle.x = 0.0;
         obstacles[i].rectangle.y = 0.0;
         obstacles[i].rectangle.width = obstacle.width/3;
         obstacles[i].rectangle.height = obstacle.height;
+        obstacles[i].position.x = windowWidth + i * 400;
         obstacles[i].position.y = windowHeight - obstacle.height;
         obstacles[i].frame = 0;
+        obstacles[i].updateTime = 1/9.0; // Bug: only first obstacle is moving, but if removed, all of them move too fast!
         obstacles[i].runningTime = 0.0;
-        obstacles[i].updateTime = 0.0;
     }
-
-    obstacles[0].position.x = windowWidth;
-    obstacles[1].position.x = windowWidth + 300;
 
     // Frames per second
     SetTargetFPS(60);
@@ -75,13 +74,22 @@ int main()
             playerVelocity = playerVelocity + jumpVelocity;
         }
 
-        obstacles[1].position.x += (obstacleVelocity * timeSinceLastFrame);
-        obstacles[0].position.x += (obstacleVelocity * timeSinceLastFrame);
+        // Update obstacle position
+        for(int i = 0; i < numberOfObstacles; i++)
+        {
+            obstacles[i].position.x += (obstacleVelocity * timeSinceLastFrame);
+        }
+
+        // Update player position
         playerData.position.y += (playerVelocity * timeSinceLastFrame);
 
-        obstacles[0].runningTime += timeSinceLastFrame;
+        for(int i = 0; i < numberOfObstacles; i++)
+        {
+            obstacles[i].runningTime += timeSinceLastFrame;
+        }
         playerData.runningTime += timeSinceLastFrame;
 
+        // Update player animation frame
         if(onTheGround)
         {
             if(playerData.runningTime >= playerData.updateTime)
@@ -97,37 +105,32 @@ int main()
             }
         }
 
-        if(obstacles[0].runningTime >= obstacles[0].updateTime)
+        // Update obstacle animation frame
+        for(int i = 0; i < numberOfObstacles; i++)
         {
-            obstacles[0].runningTime = 0.0;
-            // Update animation frame
-            obstacles[0].rectangle.x = obstacles[0].frame * obstacles[0].rectangle.width;
-            obstacles[0].frame++;
-            if(obstacles[0].frame > 2)
+            if(obstacles[i].runningTime >= obstacles[i].updateTime)
             {
-                obstacles[0].frame = 0;
+                obstacles[i].runningTime = 0.0;
+                // Update animation frame
+                obstacles[i].rectangle.x = obstacles[i].frame * obstacles[i].rectangle.width;
+                obstacles[i].frame++;
+
+            if(obstacles[i].frame > 2)
+                {
+                    obstacles[i].frame = 0;
+                }
             }
         }
 
-        if(obstacles[1].runningTime >= obstacles[1].updateTime)
+        for(int i = 0; i < numberOfObstacles; i++)
         {
-            obstacles[1].runningTime = 0.0;
-            // Update animation frame
-            obstacles[1].rectangle.x = obstacles[1].frame * obstacles[1].rectangle.width;
-            obstacles[1].frame++;
-           if(obstacles[1].frame > 2)
-            {
-                obstacles[1].frame = 0;
-            }
+            DrawTextureRec(obstacle, obstacles[i].rectangle, obstacles[i].position, WHITE);
         }
-        DrawTextureRec(obstacle2, obstacles[1].rectangle, obstacles[1].position, WHITE);
-        DrawTextureRec(obstacle, obstacles[0].rectangle, obstacles[0].position, WHITE);
+
         DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
         EndDrawing();
-        
     }
     UnloadTexture(player);
     UnloadTexture(obstacle);
-    UnloadTexture(obstacle2);
     CloseWindow();
 }
