@@ -15,6 +15,24 @@ bool isOnGround(AnimationData data, int windowHeight)
     return data.position.y >= (windowHeight - data.rectangle.height);
 }
 
+AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFrame)
+{
+    // Update running time
+    data.runningTime += deltaTime;
+    // Update animation frame
+    if (data.runningTime >= data.updateTime)
+    {
+        data.runningTime = 0.0;
+        data.rectangle.x = data.frame * data.rectangle.width;
+        data.frame++;
+        if (data.frame > maxFrame)
+        {
+            data.frame = 0;
+        }
+    }
+    return data;
+}
+
 int main()
 {
     const int windowWidth = 800;
@@ -93,37 +111,27 @@ int main()
         {
             obstacles[i].runningTime += timeSinceLastFrame;
         }
-        playerData.runningTime += timeSinceLastFrame;
+   
 
         // Update player animation frame
         if(onTheGround)
         {
-            if(playerData.runningTime >= playerData.updateTime)
-            {
-                playerData.runningTime = 0.0;
-                // Update animation frame
-                playerData.rectangle.x = playerData.frame * playerData.rectangle.width;
-                playerData.frame++;
-                if(playerData.frame > 5)
-                {
-                    playerData.frame = 0;
-                }
-            }
+            playerData = updateAnimationData(playerData, windowHeight, 5);
+
         }
 
         // Update obstacle animation frame
-        for(int i = 0; i < numberOfObstacles; i++)
+        for (AnimationData obs : obstacles)
         {
-            if(obstacles[i].runningTime >= obstacles[i].updateTime)
+            if(obs.runningTime >= obs.updateTime)
             {
-                obstacles[i].runningTime = 0.0;
+                obs.runningTime = 0.9;
                 // Update animation frame
-                obstacles[i].rectangle.x = obstacles[i].frame * obstacles[i].rectangle.width;
-                obstacles[i].frame++;
-
-            if(obstacles[i].frame > 2)
+                obs.rectangle.x = obs.frame * obs.rectangle.width;
+                obs.frame++;
+                if(obs.frame > 2)
                 {
-                    obstacles[i].frame = 0;
+                    obs.frame = 0;
                 }
             }
         }
