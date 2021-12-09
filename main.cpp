@@ -6,7 +6,7 @@ struct AnimationData
     Rectangle rectangle;
     Vector2 position;
     int frame;
-    float updateTime;
+    float updateInterval;
     float runningTime;
 };
 
@@ -20,7 +20,7 @@ AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFr
     // Update running time
     data.runningTime += deltaTime;
     // Update animation frame
-    if (data.runningTime >= data.updateTime)
+    if (data.runningTime >= data.updateInterval)
     {
         data.runningTime = 0.0;
         data.rectangle.x = data.frame * data.rectangle.width;
@@ -35,7 +35,7 @@ AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFr
 
 int main()
 {
-    const int numberOfObstacles = 1;
+    const int numberOfObstacles = 3;
     const int windowWidth = 800;
     const int windowHeight = 600;
     const int jumpVelocity = -1000;
@@ -46,6 +46,7 @@ int main()
     const float padding = 50.0;
     int playerVelocity = 0;   
     bool collision = false; 
+    bool gameOver = false;
 
     // Open window
     InitWindow(windowWidth, windowHeight, "Samiii");
@@ -59,7 +60,7 @@ int main()
     playerData.position.x = windowWidth/2 - (playerData.rectangle.width/2);
     playerData.position.y = windowHeight - playerData.rectangle.height;
     playerData.frame = 0;
-    playerData.updateTime = 1.0/12.0;
+    playerData.updateInterval = 1.0/12.0;
     playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
@@ -82,7 +83,7 @@ int main()
         obstacles[i].position.x = windowWidth + 500 + i * 500;
         obstacles[i].position.y = windowHeight - obstacle.height;
         obstacles[i].frame = 0;
-        obstacles[i].updateTime = 1/9.0; // Bug: only first obstacle is moving, but if removed, all of them move too fast!
+        obstacles[i].updateInterval = 1/9.0; 
         obstacles[i].runningTime = 0.0;
     }
 
@@ -92,12 +93,12 @@ int main()
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
-    {
+    {        
+        const float timeSinceLastFrame = GetFrameTime();
+        const float scale = 3.3;
         bool jump = IsKeyPressed(KEY_SPACE);
         bool onTheGround = isOnGround(playerData, windowHeight);
-        const float timeSinceLastFrame = GetFrameTime();
-        float scale = 3.3;
-        
+
         // Start drawing
         BeginDrawing();
         ClearBackground(WHITE); 
@@ -154,25 +155,28 @@ int main()
         }
 
         // Check collision
-        for(AnimationData obs : obstacles)
+        if(!gameOver)
         {
-            Rectangle obsRec{
-                obs.position.x - padding,
-                obs.position.y - padding,
-                obs.rectangle.width - padding,
-                obs.rectangle.height - padding
-            };
+                for(AnimationData obs : obstacles)
+                {
+                Rectangle obsRec{
+                    obs.position.x - padding,
+                    obs.position.y - padding,
+                    obs.rectangle.width - padding,
+                    obs.rectangle.height - padding
+                };
 
-            Rectangle playRec{
-                playerData.position.x - padding,
-                playerData.position.y - padding,
-                playerData.rectangle.width - padding,
-                playerData.rectangle.height - padding
-            };
+                Rectangle playRec{
+                    playerData.position.x - padding,
+                    playerData.position.y - padding,
+                    playerData.rectangle.width - padding,
+                    playerData.rectangle.height - padding
+                };
 
-            if(CheckCollisionRecs(obsRec, playRec))
-            {
-                collision = true;
+                if(CheckCollisionRecs(obsRec, playRec))
+                {
+                    collision = true;
+                }
             }
         }
 
@@ -180,10 +184,12 @@ int main()
         if(collision)
         {
             DrawText("Game Over :(", windowWidth/4, windowHeight/2, 70, WHITE);
+            gameOver = true;
         }
-        else if (playerData.position.x == finishLine)
+        else if (playerData.position.x >= finishLine)
         {
             DrawText("YOU WIN :)", windowWidth/3, windowHeight/2, 50, WHITE);
+            gameOver = true;
         }
         else
         {
