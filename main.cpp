@@ -58,6 +58,8 @@ int main()
     playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
+    Texture2D background = LoadTexture("textures/far-buildings.png");
+    float bgX;
 
     const int numberOfObstacles = 6;
 
@@ -85,9 +87,19 @@ int main()
         bool jump = IsKeyPressed(KEY_SPACE);
         bool onTheGround = isOnGround(playerData, windowHeight);
         const float timeSinceLastFrame = GetFrameTime();
+        float bgScale = 3.3;
         
+        // Start drawing
         BeginDrawing();
-        ClearBackground(WHITE);  
+        ClearBackground(WHITE); 
+         
+        bgX -= 20 * timeSinceLastFrame;
+
+        // Draw background
+        Vector2 bgPosition{bgX, 0.0};
+        DrawTextureEx(background, bgPosition, 0.0, bgScale, WHITE);
+        Vector2 bg2Position{bgX + background.width * bgScale, 0.0};
+        DrawTextureEx(background, bg2Position, 0.0, bgScale, WHITE);
 
         // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
@@ -98,7 +110,7 @@ int main()
             playerVelocity = playerVelocity + jumpVelocity;
         }
 
-        // Update player position
+        // Update player position (must be after condition to check for jump)
         playerData.position.y += (playerVelocity * timeSinceLastFrame);
 
         // Update player animation frame
@@ -125,5 +137,6 @@ int main()
     }
     UnloadTexture(player);
     UnloadTexture(obstacle);
+    UnloadTexture(background);
     CloseWindow();
 }
