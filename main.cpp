@@ -35,12 +35,17 @@ AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFr
 
 int main()
 {
+    const int numberOfObstacles = 1;
     const int windowWidth = 800;
     const int windowHeight = 600;
-    const int jumpVelocity = -800;
+    const int jumpVelocity = -1000;
     const int obstacleVelocity = -300;
-    const int gravity = 3000;
-    int playerVelocity = 0;    
+    const int gravity = 3000;  
+    const int maxPlayerFrames = 5;
+    const int maxObstaclesFrames = 2;
+    const float padding = 50.0;
+    int playerVelocity = 0;   
+    bool collision = false; 
 
     // Open window
     InitWindow(windowWidth, windowHeight, "Samiii");
@@ -65,8 +70,6 @@ int main()
     Texture2D foreground = LoadTexture("textures/foreground.png");
     float fgX;
 
-    const int numberOfObstacles = 6;
-
     // Array of obstacles
     AnimationData obstacles[numberOfObstacles]{};
 
@@ -76,16 +79,18 @@ int main()
         obstacles[i].rectangle.y = 0.0;
         obstacles[i].rectangle.width = obstacle.width/3;
         obstacles[i].rectangle.height = obstacle.height;
-        obstacles[i].position.x = windowWidth + i * 400;
+        obstacles[i].position.x = windowWidth + 500 + i * 500;
         obstacles[i].position.y = windowHeight - obstacle.height;
         obstacles[i].frame = 0;
         obstacles[i].updateTime = 1/9.0; // Bug: only first obstacle is moving, but if removed, all of them move too fast!
         obstacles[i].runningTime = 0.0;
     }
 
+    float finishLine = obstacles[numberOfObstacles-1].position.x;
+
     // Frames per second
     SetTargetFPS(60);
-    
+
     while (!WindowShouldClose())
     {
         bool jump = IsKeyPressed(KEY_SPACE);
@@ -133,33 +138,72 @@ int main()
         // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
 
-        // Avoid air jump/double jump
+        // Check for jump (and avoid air jump/double jump)
         if(jump && onTheGround)
         {
             playerVelocity = playerVelocity + jumpVelocity;
         }
 
-        // Update player position (must be after condition to check for jump)
+        // Update player position (must be after jump check)
         playerData.position.y += (playerVelocity * timeSinceLastFrame);
 
         // Update player animation frame
         if(onTheGround)
         {
-            playerData = updateAnimationData(playerData, timeSinceLastFrame, 5);
+            playerData = updateAnimationData(playerData, timeSinceLastFrame, maxPlayerFrames);
         }
 
-        // Draw player
-        DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
-
-        for(int i = 0; i < numberOfObstacles; i++)
+        // Check collision
+        for(AnimationData obs : obstacles)
         {
-            // Update obstacle position (moving left on X-axis)
-            obstacles[i].position.x += (obstacleVelocity * timeSinceLastFrame);
-            // Update obstacle animation frame
-            obstacles[i] = updateAnimationData(obstacles[i], timeSinceLastFrame, 2);
-            // Draw obstacle 
-            DrawTextureRec(obstacle, obstacles[i].rectangle, obstacles[i].position, WHITE);
+            Rectangle obsRec{
+                obs.position.x - padding,
+                obs.position.y - padding,
+                obs.rectangle.width - padding,
+                obs.rectangle.height - padding
+            };
+
+            Rectangle playRec{
+                playerData.position.x - padding,
+                playerData.position.y - padding,
+                playerData.rectangle.width - padding,
+                playerData.rectangle.height - padding
+            };
+
+            if(CheckCollisionRecs(obsRec, playRec))
+            {
+                collision = true;
+            }
         }
+
+        // Check if game is over
+        if(collision)
+        {
+            DrawText("Game Over :(", windowWidth/4, windowHeight/2, 70, WHITE);
+        }
+        else if (playerData.position.x == finishLine)
+        {
+            DrawText("YOU WIN :)", windowWidth/3, windowHeight/2, 50, WHITE);
+        }
+        else
+        {
+             // Draw player
+            DrawTextureRec(player, playerData.rectangle, playerData.position, WHITE);
+
+            // Draw obstacles
+            for(int i = 0; i < numberOfObstacles; i++)
+            {
+                // Update obstacle position (moving left on X-axis)
+                obstacles[i].position.x += (obstacleVelocity * timeSinceLastFrame);
+                // Update obstacle animation frame
+                obstacles[i] = updateAnimationData(obstacles[i], timeSinceLastFrame, maxObstaclesFrames);
+                // Draw obstacle 
+                DrawTextureRec(obstacle, obstacles[i].rectangle, obstacles[i].position, WHITE);
+            }
+        }
+
+        // Update finish line
+        finishLine += obstacleVelocity * timeSinceLastFrame;
         
         EndDrawing();
     }
