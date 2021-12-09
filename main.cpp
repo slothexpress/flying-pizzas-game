@@ -110,7 +110,7 @@ int main()
 
         // Draw scrolling midground
         mgX -= 40 * timeSinceLastFrame;
-        if(mgX <= (-background.width * scale))
+        if(mgX <= (-midground.width * scale))
         {
             mgX = 0.0;
         }
@@ -121,12 +121,14 @@ int main()
 
         // Draw scrolling foreground
         fgX -= 80 * timeSinceLastFrame;
-        if(fgX <= (-background.width * scale))
+        if(fgX <= (-foreground.width * scale))
         {
             fgX = 0.0;
         }
-
-
+        Vector2 fgPosition{fgX, 0.0};
+        DrawTextureEx(foreground, fgPosition, 0.0, scale, WHITE);
+        Vector2 fg2Position{fgX + foreground.width * scale, 0.0};
+        DrawTextureEx(foreground, fg2Position, 0.0, scale, WHITE);
 
         // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
