@@ -33,6 +33,18 @@ AnimationData updateAnimationData(AnimationData data, float deltaTime, int maxFr
     return data;
 }
 
+void drawScrollingBackground(Texture2D background, float xPosition, float scale, float timeSinceLastFrame)
+{
+        if(xPosition <= (-background.width * scale))
+        {
+            xPosition = 0.0;
+        }
+        Vector2 bgPosition{xPosition, 0.0};
+        DrawTextureEx(background, bgPosition, 0.0, scale, WHITE);
+        Vector2 bg2Position{xPosition + background.width * scale, 0.0};
+        DrawTextureEx(background, bg2Position, 0.0, scale, WHITE);
+}
+
 int main()
 {
     const int numberOfObstacles = 3;
@@ -80,7 +92,7 @@ int main()
         obstacles[i].rectangle.y = 0.0;
         obstacles[i].rectangle.width = obstacle.width/3;
         obstacles[i].rectangle.height = obstacle.height;
-        obstacles[i].position.x = windowWidth + 500 + i * 500;
+        obstacles[i].position.x = windowWidth + 700 + i * 500;
         obstacles[i].position.y = windowHeight - obstacle.height;
         obstacles[i].frame = 0;
         obstacles[i].updateInterval = 1/9.0; 
@@ -105,36 +117,15 @@ int main()
          
         // Draw scrolling background
         bgX -= 20 * timeSinceLastFrame;
-        if(bgX <= (-background.width * scale))
-        {
-            bgX = 0.0;
-        }
-        Vector2 bgPosition{bgX, 0.0};
-        DrawTextureEx(background, bgPosition, 0.0, scale, WHITE);
-        Vector2 bg2Position{bgX + background.width * scale, 0.0};
-        DrawTextureEx(background, bg2Position, 0.0, scale, WHITE);
+        drawScrollingBackground(background, bgX, scale, timeSinceLastFrame);
 
         // Draw scrolling midground
         mgX -= 40 * timeSinceLastFrame;
-        if(mgX <= (-midground.width * scale))
-        {
-            mgX = 0.0;
-        }
-        Vector2 mgPosition{mgX, 0.0};
-        DrawTextureEx(midground, mgPosition, 0.0, scale, WHITE);
-        Vector2 mg2Position{mgX + midground.width * scale, 0.0};
-        DrawTextureEx(midground, mg2Position, 0.0, scale, WHITE);
+        drawScrollingBackground(midground, mgX, scale, timeSinceLastFrame);
 
         // Draw scrolling foreground
         fgX -= 80 * timeSinceLastFrame;
-        if(fgX <= (-foreground.width * scale))
-        {
-            fgX = 0.0;
-        }
-        Vector2 fgPosition{fgX, 0.0};
-        DrawTextureEx(foreground, fgPosition, 0.0, scale, WHITE);
-        Vector2 fg2Position{fgX + foreground.width * scale, 0.0};
-        DrawTextureEx(foreground, fg2Position, 0.0, scale, WHITE);
+        drawScrollingBackground(foreground, fgX, scale, timeSinceLastFrame);
 
         // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
