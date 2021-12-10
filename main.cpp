@@ -76,12 +76,12 @@ int main()
     playerData.runningTime = 0.0;
 
     Texture2D obstacle = LoadTexture("textures/obstacle.png");
-    Texture2D background = LoadTexture("textures/background.png");
-    float bgX;
-    Texture2D midground = LoadTexture("textures/midground.png");
-    float mgX;
-    Texture2D foreground = LoadTexture("textures/foreground.png");
-    float fgX;
+    Texture2D backgrounds[] = {
+        LoadTexture("textures/background.png"),
+        LoadTexture("textures/midground.png"),
+        LoadTexture("textures/foreground.png")
+    };
+    float backgroundX[] = {0.0, 0.0, 0.0};
 
     // Array of obstacles
     AnimationData obstacles[numberOfObstacles]{};
@@ -115,17 +115,11 @@ int main()
         BeginDrawing();
         ClearBackground(WHITE); 
          
-        // Draw scrolling background
-        bgX -= 20 * timeSinceLastFrame;
-        drawScrollingBackground(background, bgX, scale, timeSinceLastFrame);
-
-        // Draw scrolling midground
-        mgX -= 40 * timeSinceLastFrame;
-        drawScrollingBackground(midground, mgX, scale, timeSinceLastFrame);
-
-        // Draw scrolling foreground
-        fgX -= 80 * timeSinceLastFrame;
-        drawScrollingBackground(foreground, fgX, scale, timeSinceLastFrame);
+        for (unsigned int i = 0; i < 3; i++)
+        {
+            backgroundX[i] -= i * 30 * timeSinceLastFrame;
+            drawScrollingBackground(backgrounds[i], backgroundX[i], scale, timeSinceLastFrame);
+        }
 
         // Perform ground check
         playerVelocity = onTheGround ? 0 : playerVelocity + (gravity * timeSinceLastFrame);
@@ -206,8 +200,10 @@ int main()
     }
     UnloadTexture(player);
     UnloadTexture(obstacle);
-    UnloadTexture(background);
-    UnloadTexture(midground);
-    UnloadTexture(foreground);
+    for (auto bg : backgrounds)
+    {
+        UnloadTexture(bg);
+    }
+    
     CloseWindow();
 }
