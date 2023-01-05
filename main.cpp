@@ -47,7 +47,7 @@ void drawScrollingBackground(Texture2D background, float xPosition, float scale,
 
 int main()
 {
-    const int numberOfObstacles = 3;
+    const int numberOfObstacles = 6;
     const int windowWidth = 800;
     const int windowHeight = 600;
     const int jumpVelocity = -1300;
